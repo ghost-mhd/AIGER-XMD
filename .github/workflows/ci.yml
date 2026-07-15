@@ -1,0 +1,39 @@
+# Ce fichier doit être placé dans : .github/workflows/ci.yml
+# GitHub Actions le détecte automatiquement et lance le pipeline
+# à chaque push ou pull request sur la branche main.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupère le code du dépôt (votre fork)
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      # 2. Installe Node.js (Baileys nécessite une version récente)
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Installe les dépendances du projet
+      #    Si le projet a un package-lock.json, "npm ci" est plus fiable
+      #    et plus rapide que "npm install" pour un pipeline CI.
+      - name: Installer les dépendances
+        run: npm ci
+
+      # 4. Vérifie que le fichier principal n'a pas d'erreur de syntaxe
+      #    "node --check" lit le fichier sans l'exécuter réellement
+      #    (utile ici car index.js lance sans doute une connexion WhatsApp
+      #    qu'on ne veut pas déclencher dans le pipeline).
+      - name: Vérifier la syntaxe du point d'entrée
+        run: node --check index.js
